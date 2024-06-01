@@ -2,6 +2,7 @@ import cv2
 import sys
 from flask import Flask, Response, render_template
 import threading
+import argparse
 
 app = Flask(__name__)
 window_name = "Webcam"
@@ -14,7 +15,7 @@ mq_frame = None
 lock = threading.Lock()
 running = True
 
-def saveFrame(device):
+def saveFrame(device, imshow):
     global hq_frame, mq_frame, lq_frame
 
     cap = cv2.VideoCapture(device)
@@ -32,8 +33,9 @@ def saveFrame(device):
             print("Unable to retrieve frame...")
             lock.release() # Release lock
             break
-
-        cv2.imshow(window_name, hq_frame)
+        
+        if (imshow):
+            cv2.imshow(window_name, hq_frame)
 
         mq_scale = 0.5
         lq_scale = 0.25
@@ -126,19 +128,30 @@ def video_feed_lq():
 @app.route('/')
 def index():
     return render_template('index.html')
-    
+ 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python3 usb_cam.py <video_device>")
-        sys.exit(1)
 
-    device = sys.argv[1]
+    # Parse arguments
+    parser = argparse.ArgumentParser(description='Webcam streaming server')
+    parser.add_argument('video_device', type=str, help='Video device index. Example: /dev/video0')
+    parser.add_argument('--no-imshow', action='store_true', help='Disable displaying video stream on local pc')
+    parser.add_argument('--no-webserver', action='store_true', help='Disable web server')
+    args = parser.parse_args()
 
-    capture_thread = threading.Thread(target=saveFrame, args=(device,))
+    imshow = not args.no_imshow
+    webserver = not args.no_webserver
+    device = args.video_device
+
+    capture_thread = threading.Thread(target=saveFrame, args=(device, imshow, ))
     capture_thread.start()
 
-    # Ejecutar la aplicación Flask
-    app.run(host='0.0.0.0', port=5000)
-    
+    if (webserver):
+        app.run(host='0.0.0.0', port=5000)
+    else:
+        # Spin until the user wants to stop
+        stdin = None
+        while stdin != "q":
+            stdin = input("Write: q + [Enter] to close this program:\n")
+        
     running = False
     capture_thread.join()
