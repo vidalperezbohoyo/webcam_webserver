@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Feed</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            display: flex;
+            justify-content: center; /* Centra horizontalmente */
+            align-items: center; /* Centra verticalmente */
+            background-color: black; /* Fondo negro */
+        }
+
+        img {
+            height: 100%;
+        }
+
+        .button-container {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+
+        .button-container button {
+            padding: 10px 20px;
+            margin-right: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        .button-container button:hover {
+            background-color: #0056b3;
+        }
+
+        .button-container button.selected {
+            background-color: #8dc4ff; 
+        }
+    </style>
+</head>
+<body>
+    <div class="button-container">
+        <button id ='btn-hq' onclick="changeQuality('hq')" class="selected">HighQuality</button>
+        <button id ='btn-mq' onclick="changeQuality('mq')">MediumQuality</button>
+        <button id ='btn-lq' onclick="changeQuality('lq')">LowQuality</button>
+    </div>
+    <img id="video-feed" src="{{ url_for('video_feed_hq') }}" alt="Video Feed">
+    <script>
+        function changeQuality(quality) {
+            var img = document.getElementById('video-feed');
+            var btnHQ = document.getElementById('btn-hq');
+            var btnMQ = document.getElementById('btn-mq');
+            var btnLQ = document.getElementById('btn-lq');
+            if (quality === 'hq') {
+                img.src = "{{ url_for('video_feed_hq') }}";
+                btnHQ.classList.add('selected');
+                btnMQ.classList.remove('selected');
+                btnLQ.classList.remove('selected');
+            } else if (quality === 'mq') {
+                img.src = "{{ url_for('video_feed_mq') }}";
+                btnHQ.classList.remove('selected');
+                btnMQ.classList.add('selected');
+                btnLQ.classList.remove('selected');
+            } else if (quality === 'lq') {
+                img.src = "{{ url_for('video_feed_lq') }}";
+                btnHQ.classList.remove('selected');
+                btnMQ.classList.remove('selected');
+                btnLQ.classList.add('selected');
+            }
+        }
+    </script>
+</body>
+</html>
